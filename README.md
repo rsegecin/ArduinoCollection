@@ -3,9 +3,12 @@ This's some libraries that I've built and worked recurrently though out the year
 
 ## To insert a new serial command: 
 
+It's useful when interpreting **AT** like commands that may have few parameters to be parsed. Despite the size of the code in interruption it's really fast and makes just a few comparisons with the current command to be interpreted.
+
    - add the command's name in the **enum eSerialCommands** inside the file **SerialInterpreter**.h
    - while setting up execute the following command ```SerialInterpreter.AddCommand("print", SerialInterpreterClass::eSerialCommands::[]);```
    - add a new case on the switch inside SerialHandler function as you can see in **test.ino**.
+   - get those parameters with ```SerialInterpreter.GetParameter([parameter nº])```
 
 This serial library interprets messages with the following format:
 ```
@@ -19,4 +22,4 @@ eg:
 
 ## RTC 
    
-   It started as a timer library that uses the microcontroller's timer0 interruption that can break the delay if some flag occurred. It's really useful when communicating with some other device like ETRX that takes some time to process a request and you'd like to keep doing some other stuff as soon the request is fulfilled. I included a sDateTime structure and a method for parsing ISO date time string into sDateTime, as timer0 ticks 1000 times it increases ```uint32_t Time``` that counts the seconds since the beginning of 2000.
+It started as a timer library that uses the microcontroller's timer0 interruption that can break the delay if some flag occurred. It's really useful when communicating with some other device like ETRX that takes some time to process a request and you'd like to keep doing some other stuff as soon the request is fulfilled. I included a sDateTime structure and a method for parsing ISO date time string into sDateTime, as timer0 ticks 1000 times it increases ```uint32_t Time``` that counts the seconds since the beginning of 2000. 
