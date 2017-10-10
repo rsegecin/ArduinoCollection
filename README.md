@@ -6,7 +6,7 @@ To add new serial command don't forget to add the command's name in the **enum e
 
 This serial library interprets messages with the following format:
 ```
-    \r\n[name of the command], [parametes separated by coma ',']\r\n 
+    \r\n[name of the command], [parametes separated by coma ',', ';' or '=']\r\n 
 ```
 
 eg:
