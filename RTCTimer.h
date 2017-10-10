@@ -44,6 +44,7 @@ public:
 	void OnInterrupt();
 	void DelayMili(uint32_t pMili);
 	void DelayMili(uint32_t pMili, bool &pFlag);
+	void DelayMili(uint32_t pMili, void(*doWhile)(void));
 	void DelayMili(uint32_t pMili, bool &pFlag, void(*doWhile)(void));
 	void SetTime(tTime pTime); // Time in seconds since January 1st 2000
 	bool SetTime(char pTimeString[]);

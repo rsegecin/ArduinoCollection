@@ -2,7 +2,6 @@
 #include "RTCTimer.h"
 
 char lBuffer[DEF_MSG_SIZE];
-bool tmp = false;
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -25,7 +24,7 @@ int main(void)
 	
 	for (;;)
 	{
-		RTCTimer.DelayMili(1000, tmp, &doWhatever);
+		RTCTimer.DelayMili(1000, &doWhatever);
 		PrintTime();
 	}
 }

@@ -59,6 +59,16 @@ void RTCTimerClass::DelayMili(uint32_t pMili, bool &pFlag)
 	while ((!pFlag) && (miliSeconds <= tmpTicks)) { yield(); }
 }
 
+void RTCTimerClass::DelayMili(uint32_t pMili, void(*doWhile)(void))
+{
+	tmpTicks = miliSeconds + pMili;
+
+	while (miliSeconds <= tmpTicks)
+	{
+		doWhile();
+	}
+}
+
 void RTCTimerClass::DelayMili(uint32_t pMili, bool &pFlag, void(*doWhile)(void))
 {
 	tmpTicks = miliSeconds + pMili;
