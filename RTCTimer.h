@@ -56,6 +56,7 @@ private:
 	//char lBuffer[DEF_MSG_SIZE];
 	bool tmpTest;
 	volatile uint32_t miliSeconds;
+	volatile uint32_t miliToSec;
 	volatile uint32_t tmpTicks;
 };
 

@@ -8,7 +8,7 @@ RTCTimerClass::RTCTimerClass()
 	TCNT1 = 0;		//initialize counter value to 0
 
 					// set compare match register for 8khz increments
-	OCR1A = 999;	// = [(16*10^6) / (1000*8)] - 1 = (must be < 65536)
+	OCR1A = 1999;	// = [(16*10^6) / (1000*8)] - 1 = (must be < 65536)
 
 					// turn on CTC mode
 	TCCR1B |= (1 << WGM12);
@@ -35,11 +35,12 @@ void RTCTimerClass::OnInterrupt()
 		clear_bit(PINB, DEBUG_PIN);
 	}
 
+	miliToSec++;
 	miliSeconds++;
 
-	if (miliSeconds >= 1000)
+	if (miliToSec >= 1000)
 	{
-		miliSeconds = 0;
+		miliToSec = 0;
 		Time++;
 	}
 }
@@ -198,7 +199,7 @@ void RTCTimerClass::BreakTime(tTime &timeInput, sDateTime &tm)
 	uint8_t year;
 	uint8_t month, monthLength;
 	uint32_t time;
-	unsigned long days;
+	uint16_t days;
 
 	/*sprintf(lBuffer, "RTC has been set %lu.", (uint32_t)RTCTimer.Time);
 	SerialInterpreter.Send(lBuffer);*/
@@ -224,7 +225,7 @@ void RTCTimerClass::BreakTime(tTime &timeInput, sDateTime &tm)
 	}
 	tm.Year = year + 2000; // year is offset from 2000 
 
-	days -= LEAP_YEAR(year) ? 366 : 365;
+	days -= (LEAP_YEAR(year) ? 366 : 365);
 	time -= days; // now it is days in this year, starting at 0
 
 	days = 0;
