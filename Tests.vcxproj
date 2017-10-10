@@ -83,14 +83,11 @@
     <ClInclude Include="Communs.h" />
     <ClInclude Include="RTCTimer.h" />
     <ClInclude Include="SerialInterpreter.h" />
-    <ClInclude Include="Variable.h" />
     <ClInclude Include="__vm\.ArduinoCollections.vsarduino.h" />
-    <ClInclude Include="__vm\.Tests.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RTCTimer.cpp" />
     <ClCompile Include="SerialInterpreter.cpp" />
-    <ClCompile Include="Variable.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

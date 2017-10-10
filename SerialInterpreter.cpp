@@ -4,8 +4,6 @@ void SerialInterpreterClass::ClearBuffer(void)
 {
 	MessageReady = false;
 	MessageCommand = nNenhum;
-
-	memset(StrParameters, 0x00, DEF_MSG_SIZE);
 }
 
 char* SerialInterpreterClass::GetParameter(unsigned char index)
@@ -41,7 +39,6 @@ void SerialInterpreterClass::usart_tx(char c)
 {
 	while (!(UCSR0A & _BV(UDRE0)));
 	UDR0 = c;
-	//Serial.print(c);
 }
 
 void SerialInterpreterClass::Send(const char *s)
@@ -86,6 +83,8 @@ void SerialInterpreterClass::OnInterrupt()
 	{
 		charParam = UDR0;
 
+		MessageBuffer[msgPosition] = charParam;
+
 		switch (estado)
 		{
 		case 0:
@@ -99,6 +98,7 @@ void SerialInterpreterClass::OnInterrupt()
 				flagD = true;
 			else if ((flagD == true) && (charParam == 0x0A))
 			{
+				memset(MessageBuffer, 0x00, DEF_MSG_SIZE);
 				estado = 1;
 				flagD = false;
 			}
@@ -252,6 +252,10 @@ void SerialInterpreterClass::OnInterrupt()
 							estado = 0;
 						}
 
+						strCmd = MessageBuffer + 1;
+						memmove(MessageBuffer, strCmd, strlen(strCmd));
+						memset(MessageBuffer + (msgPosition - 2), 0x00, DEF_MSG_SIZE - (msgPosition - 2));
+
 						matchingCmd = 0;
 						msgCmdPosition = 0;
 						emEspera = false;
@@ -281,6 +285,10 @@ void SerialInterpreterClass::OnInterrupt()
 			{
 				flagD = false;
 				StrParameters[msgCmdPosition - 1] = 0x00;
+
+				strCmd = MessageBuffer + 1;
+				memmove(MessageBuffer, strCmd, strlen(strCmd));
+				memset(MessageBuffer + (msgPosition - 2), 0x00, DEF_MSG_SIZE - (msgPosition - 2));
 
 				MessageReady = true;
 				MessageCommand = (eSerialCommands)matchingCmd;
@@ -318,7 +326,12 @@ SerialInterpreterClass::SerialInterpreterClass()
 	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 	//enable reception and RC complete interrupt
 	UCSR0B = (1 << RXEN0) | (1 << RXCIE0);
+
 	ClearBuffer();
+}
+
+SerialInterpreterClass::~SerialInterpreterClass()
+{
 }
 
 SerialInterpreterClass SerialInterpreter;

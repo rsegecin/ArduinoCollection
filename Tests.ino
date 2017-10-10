@@ -1,8 +1,8 @@
 #include "SerialInterpreter.h"
 #include "RTCTimer.h"
-#include "Variable.h"
 
 char lBuffer[DEF_MSG_SIZE];
+sDateTime t;
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -38,38 +38,27 @@ void SerialHandler()
 	{
 		case SerialInterpreterClass::eSerialCommands::nSetDate:
 		{
-			/*if (RTCTimer.SetTime(SerialInterpreter.GetParameter(0)))
+			if (RTCTimer.SetTime(SerialInterpreter.GetParameter(0)))
 			{
 				sprintf(lBuffer, "RTC has been set.");
+				RTCTimer.BreakTime(RTCTimer.Time, t);
 			}
 			else
 			{
-				sprintf(lBuffer, "Couldn't parse datetime.");
-			}*/
-			
-			RTCTimer.SetTime(SerialInterpreter.GetParameter(0));
-
-			sprintf(lBuffer, "Setting date %d:%d:%d and the date is %d/%d/%d %p",
-				RTCTimer.TimeModel.tm_hour, RTCTimer.TimeModel.tm_min, RTCTimer.TimeModel.tm_sec,
-				RTCTimer.TimeModel.tm_mday, RTCTimer.TimeModel.tm_mon, RTCTimer.TimeModel.tm_year, (void *) &RTCTimer.TimeModel);
+				sprintf(lBuffer, "Couldn't parse datetime %s.", SerialInterpreter.GetParameter(0));
+			}
 
 			SerialInterpreter.Send(lBuffer);
 			SerialInterpreter.ClearBuffer();
 			break;
 		}
 		case SerialInterpreterClass::eSerialCommands::nPrint:
-		{
-			tm  t;
-			RTCTimer.BreakTime(RTCTimer.MainTime, t);
-			
-			strftime(lBuffer, sizeof(lBuffer), "%d/%m/%Y %H:%M:%S", &t);
-
-			/*sprintf(lBuffer, "Printing date %d:%d:%d and the date is %d/%d/%d %p",
-				RTCTimer.STm.tm_hour, RTCTimer.STm.tm_min, RTCTimer.STm.tm_sec,
-				RTCTimer.STm.tm_mday, RTCTimer.STm.tm_mon, RTCTimer.STm.tm_year, (void *)&RTCTimer.STm);*/
-
+		{			
+			sprintf(lBuffer, "%i:%i:%i", t.Hours, t.Minutes, t.Seconds);
 			SerialInterpreter.Send(lBuffer);
 			
+			sprintf(lBuffer, "%i %i %i", t.DayOfMonth, t.Month, t.Year);
+			SerialInterpreter.Send(lBuffer);
 			SerialInterpreter.ClearBuffer();
 			break;
 		}

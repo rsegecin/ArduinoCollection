@@ -65,43 +65,31 @@ void RTCTimerClass::DelayMili(uint32_t pMili, bool &pFlag, void(*doWhile)(void))
 	}
 }
 
-//void RTCTimerClass::SetTime(time_t pTime)
-//{
-//	MainTime = pTime;
-//}
+void RTCTimerClass::SetTime(tTime pTime)
+{
+	Time = pTime;
+}
 
 bool RTCTimerClass::SetTime(char pTimeString[])
 {
-	struct tm * pointer = ParseTime(pTimeString);
+	sDateTime * pointer = ParseTime(pTimeString);
 
-	//if (TimeModel.tm_year != -1)
-	//{
-	//	sprintf(lBuffer, "Metallica %d:%d:%d and the date is %d/%d/%d %p %p",
-	//		TimeModel.tm_hour, TimeModel.tm_min, TimeModel.tm_sec,
-	//		TimeModel.tm_mday, TimeModel.tm_mon, TimeModel.tm_year, (void *)&TimeModel, (void *)pointer);
+	if (DateTime.Year != -1)
+	{
+		Time = MakeTime(DateTime);
 
-	//	SerialInterpreter.Send(lBuffer);
+		//sprintf(lBuffer, "Since 2000 there is %lu seconds", MainTime);
+		//SerialInterpreter.Send(lBuffer);
 
+		return true;
+	}
 
-	//	sprintf(lBuffer, "All night long");
-	//	SerialInterpreter.Send(lBuffer);
-
-	//	/*
-	//	time_t t = MakeTime(STm);
-
-	//	if (t != -1)
-	//	{
-	//		MainTime = t;
-	//		return true;
-	//	}*/
-	//}
-
-	MainTime = 0;
+	Time = 0;
 
 	return false;
 }
 
-struct tm * RTCTimerClass::ParseTime(char pTimeString[])
+sDateTime * RTCTimerClass::ParseTime(char pTimeString[])
 {
 	String strDateTime(pTimeString);
 	int iT = strDateTime.indexOf('T');
@@ -122,16 +110,16 @@ struct tm * RTCTimerClass::ParseTime(char pTimeString[])
 
 		char cap[4];
 
-		memset(&TimeModel, 0x00, sizeof(struct tm));
+		memset(&DateTime, 0x00, sizeof(sDateTime));
 
 		if (msDate.level == 3)
 		{
 			msDate.GetCapture(cap, 0);
-			TimeModel.tm_year = atoi(cap) - 2000;
+			DateTime.Year = atoi(cap) - 2000;
 			msDate.GetCapture(cap, 1);
-			TimeModel.tm_mon = atoi(cap);
+			DateTime.Month = atoi(cap);
 			msDate.GetCapture(cap, 2);
-			TimeModel.tm_mday = atoi(cap);
+			DateTime.DayOfMonth = atoi(cap);
 
 			strcpy_P(tmpBuffer, TimeISORegex);
 			MatchState msTime(strTime);
@@ -140,17 +128,11 @@ struct tm * RTCTimerClass::ParseTime(char pTimeString[])
 			if (msTime.level == 3)
 			{
 				msTime.GetCapture(cap, 0);
-				TimeModel.tm_hour = atoi(cap);
+				DateTime.Hours = atoi(cap);
 				msTime.GetCapture(cap, 1);
-				TimeModel.tm_min = atoi(cap);
+				DateTime.Minutes = atoi(cap);
 				msTime.GetCapture(cap, 2);
-				TimeModel.tm_sec = atoi(cap);
-
-				sprintf(lBuffer, "The time is %d:%d:%d and the date is %d/%d/%d %p",
-					TimeModel.tm_hour, TimeModel.tm_min, TimeModel.tm_sec,
-					TimeModel.tm_mday, TimeModel.tm_mon, TimeModel.tm_year, (void **)&TimeModel);
-
-				SerialInterpreter.Send(lBuffer);
+				DateTime.Seconds = atoi(cap);
 
 				allRight = true;
 			}
@@ -158,72 +140,86 @@ struct tm * RTCTimerClass::ParseTime(char pTimeString[])
 	}
 
 	if (!allRight)
-		TimeModel.tm_year = -1;
+		DateTime.Year = -1;
 
-	TimeModel.tm_isdst = -1;
-
-	return &TimeModel;
+	return &DateTime;
 }
 
-
-time_t RTCTimerClass::MakeTime(tm &pTm)
+tTime RTCTimerClass::MakeTime(sDateTime &pTm)
 {
 	int i;
 	uint32_t seconds;
 
-	// seconds from 1970 till 1 jan 00:00:00 of the given year
-	seconds = pTm.tm_year * (SECS_PER_DAY * 365);
-	for (i = 0; i < pTm.tm_year; i++)
+	// seconds from 2000 till 1 jan 00:00:00 of the given year
+	seconds = pTm.Year * (SECS_PER_DAY * 365);
+	for (i = 0; i < pTm.Year; i++)
 	{
 		if (LEAP_YEAR(i))
 		{
-			seconds += SECS_PER_DAY;   // add extra days for leap years
+			seconds += SECS_PER_DAY;
 		}
 	}
 
 	// add days for this year, months start from 1
-	for (i = 1; i < pTm.tm_mon; i++)
+	for (i = 1; i < pTm.Month; i++)
 	{
-		if ((i == 2) && LEAP_YEAR(pTm.tm_year))
+		switch (monthDays[i - 1])
 		{
-			seconds += SECS_PER_DAY * 29;
-		}
-		else
-		{
-			seconds += SECS_PER_DAY * monthDays[i - 1];  //monthDay array starts from 0
+		case 28:
+			if (LEAP_YEAR(pTm.Year))
+				seconds += SECS_PER_FEB_LEAP;
+			else
+				seconds += SECS_PER_FEB;
+			break;
+		case 30:
+			seconds += SECS_PER_MONTH_EVEN;
+			break;
+		case 31:
+			seconds += SECS_PER_MONTH_ODD;
+			break;
+		default:
+			break;
 		}
 	}
 
-	seconds += (pTm.tm_mday - 1) * SECS_PER_DAY;
-	seconds += pTm.tm_hour * SECS_PER_HOUR;
-	seconds += pTm.tm_min * SECS_PER_MIN;
-	seconds += pTm.tm_sec;
-	return (time_t)seconds;
+	seconds += (pTm.DayOfMonth - 1) * SECS_PER_DAY;
+	seconds += pTm.Hours * SECS_PER_HOUR;
+	seconds += pTm.Minutes * SECS_PER_MIN;
+	seconds += pTm.Seconds;
+
+	return (tTime)seconds;
 }
 
-void RTCTimerClass::BreakTime(time_t timeInput, tm &tm)
+void RTCTimerClass::BreakTime(tTime &timeInput, sDateTime &tm)
 {
 	uint8_t year;
 	uint8_t month, monthLength;
 	uint32_t time;
 	unsigned long days;
 
+	/*sprintf(lBuffer, "RTC has been set %lu.", (uint32_t)RTCTimer.Time);
+	SerialInterpreter.Send(lBuffer);*/
+	
 	time = (uint32_t)timeInput;
-	tm.tm_sec = time % 60;
+	tm.Seconds = time % 60;
 	time /= 60; // now it is minutes
-	tm.tm_min = time % 60;
+	tm.Minutes = time % 60;
 	time /= 60; // now it is hours
-	tm.tm_hour = time % 24;
+	tm.Hours = time % 24;
 	time /= 24; // now it is days
-	tm.tm_wday = ((time + 4) % 7) + 1;  // Sunday is day 1 
+	tm.DayOfWeek = ((time + 4) % 7) + 1;  // Sunday is day 1 
 
 	year = 0;
 	days = 0;
-	while ((unsigned)(days += (LEAP_YEAR(year) ? 366 : 365)) <= time)
+	for (;;)
 	{
-		year++;
+		days += (LEAP_YEAR(year) ? 366 : 365);
+		if (days < time)
+			year++;
+		else
+			break;
 	}
-	tm.tm_year = year; // year is offset from 1970 
+	tm.Year = year + 2000; // year is offset from 2000 
 
 	days -= LEAP_YEAR(year) ? 366 : 365;
 	time -= days; // now it is days in this year, starting at 0
@@ -231,20 +227,15 @@ void RTCTimerClass::BreakTime(time_t timeInput, tm &tm)
 	days = 0;
 	month = 0;
 	monthLength = 0;
+
 	for (month = 0; month < 12; month++)
 	{
-		if (month == 1)
+		if ((month == 1) && (LEAP_YEAR(year)))
 		{
-			if (LEAP_YEAR(year))
-			{
-				monthLength = 29;
-			}
-			else
-			{
-				monthLength = 28;
-			}
+			monthLength = 29;
 		}
-		else {
+		else
+		{
 			monthLength = monthDays[month];
 		}
 
@@ -258,9 +249,8 @@ void RTCTimerClass::BreakTime(time_t timeInput, tm &tm)
 		}
 	}
 
-	tm.tm_mon = month + 1;  // jan is month 1  
-	tm.tm_mday = time + 1;     // day of month
+	tm.Month = month + 1;  // jan is month 1  
+	tm.DayOfMonth = time + 1;     // day of month
 }
-
 
 RTCTimerClass RTCTimer;

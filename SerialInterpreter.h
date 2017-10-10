@@ -5,6 +5,7 @@
 #define BAUD			19200
 #define DEF_MSG_SIZE	80
 
+
 #include <avr/io.h>
 #include <util/setbaud.h>
 #include <string.h>
@@ -21,16 +22,18 @@ public:
 	};
 
 	SerialInterpreterClass();
+	~SerialInterpreterClass();
 
 	volatile bool MessageReady = false;   // Serial message's flag
 	volatile eSerialCommands MessageCommand = nNenhum;   // Tells what command should be executed
 	char StrParameters[DEF_MSG_SIZE];
+	char MessageBuffer[DEF_MSG_SIZE];
 
 	void ClearBuffer(void);
 	char *GetParameter(unsigned char index);
 	void AddCommand(char * strCmdParam, eSerialCommands nCmdParam);
 	void Send(const char *s);
-	void OnInterrupt();
+	void OnInterrupt(void);
 
 private:
 	char * usart_commands[nNenhum];
