@@ -37,8 +37,11 @@ void RTCTimerClass::OnInterrupt()
 
 	miliSeconds++;
 
-	//if (miliSeconds >= 1000)
-	//	mainTime++;
+	if (miliSeconds >= 1000)
+	{
+		miliSeconds = 0;
+		Time++;
+	}
 }
 
 void RTCTimerClass::DelayMili(uint32_t pMili)

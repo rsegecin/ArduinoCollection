@@ -2,7 +2,6 @@
 #include "RTCTimer.h"
 
 char lBuffer[DEF_MSG_SIZE];
-sDateTime t;
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -41,7 +40,6 @@ void SerialHandler()
 			if (RTCTimer.SetTime(SerialInterpreter.GetParameter(0)))
 			{
 				sprintf(lBuffer, "RTC has been set.");
-				RTCTimer.BreakTime(RTCTimer.Time, t);
 			}
 			else
 			{
@@ -53,12 +51,14 @@ void SerialHandler()
 			break;
 		}
 		case SerialInterpreterClass::eSerialCommands::nPrint:
-		{			
-			sprintf(lBuffer, "%i:%i:%i", t.Hours, t.Minutes, t.Seconds);
-			SerialInterpreter.Send(lBuffer);
+		{
+			sDateTime conv;
+			RTCTimer.BreakTime(RTCTimer.Time, conv);
 			
-			sprintf(lBuffer, "%i %i %i", t.DayOfMonth, t.Month, t.Year);
+			sprintf(lBuffer, "time now: %i:%i:%i",
+				conv.Hours, conv.Minutes, conv.Seconds);
 			SerialInterpreter.Send(lBuffer);
+
 			SerialInterpreter.ClearBuffer();
 			break;
 		}

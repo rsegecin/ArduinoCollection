@@ -39,7 +39,7 @@ class RTCTimerClass
 public:
 	RTCTimerClass();
 
-	tTime Time;
+	uint32_t Time;
 	sDateTime DateTime;
 	void OnInterrupt();
 	void DelayMili(uint32_t pMili);
