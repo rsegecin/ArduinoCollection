@@ -86,14 +86,11 @@ void RTCTimerClass::SetTime(tTime pTime)
 
 bool RTCTimerClass::SetTime(char pTimeString[])
 {
-	sDateTime * pointer = ParseTime(pTimeString);
+	ParseTime(DateTime, pTimeString);
 
 	if (DateTime.Year != -1)
 	{
 		Time = MakeTime(DateTime);
-
-		//sprintf(lBuffer, "Since 2000 there is %lu seconds", MainTime);
-		//SerialInterpreter.Send(lBuffer);
 
 		return true;
 	}
@@ -103,7 +100,7 @@ bool RTCTimerClass::SetTime(char pTimeString[])
 	return false;
 }
 
-sDateTime * RTCTimerClass::ParseTime(char pTimeString[])
+bool RTCTimerClass::ParseTime(sDateTime &pDateTime, char pTimeString[])
 {
 	String strDateTime(pTimeString);
 	int iT = strDateTime.indexOf('T');
@@ -124,16 +121,16 @@ sDateTime * RTCTimerClass::ParseTime(char pTimeString[])
 
 		char cap[4];
 
-		memset(&DateTime, 0x00, sizeof(sDateTime));
+		memset(&pDateTime, 0x00, sizeof(sDateTime));
 
 		if (msDate.level == 3)
 		{
 			msDate.GetCapture(cap, 0);
-			DateTime.Year = atoi(cap) - 2000;
+			pDateTime.Year = atoi(cap);
 			msDate.GetCapture(cap, 1);
-			DateTime.Month = atoi(cap);
+			pDateTime.Month = atoi(cap);
 			msDate.GetCapture(cap, 2);
-			DateTime.DayOfMonth = atoi(cap);
+			pDateTime.DayOfMonth = atoi(cap);
 
 			strcpy_P(tmpBuffer, TimeISORegex);
 			MatchState msTime(strTime);
@@ -142,31 +139,29 @@ sDateTime * RTCTimerClass::ParseTime(char pTimeString[])
 			if (msTime.level == 3)
 			{
 				msTime.GetCapture(cap, 0);
-				DateTime.Hours = atoi(cap);
+				pDateTime.Hours = atoi(cap);
 				msTime.GetCapture(cap, 1);
-				DateTime.Minutes = atoi(cap);
+				pDateTime.Minutes = atoi(cap);
 				msTime.GetCapture(cap, 2);
-				DateTime.Seconds = atoi(cap);
+				pDateTime.Seconds = atoi(cap);
 
 				allRight = true;
 			}
 		}
 	}
 
-	if (!allRight)
-		DateTime.Year = -1;
-
-	return &DateTime;
+	return allRight;
 }
 
 tTime RTCTimerClass::MakeTime(sDateTime &pTm)
 {
 	int i;
 	uint32_t seconds;
+	int16_t year = pTm.Year - 2000;
 
 	// seconds from 2000 till 1 jan 00:00:00 of the given year
-	seconds = pTm.Year * (SECS_PER_DAY * 365);
-	for (i = 0; i < pTm.Year; i++)
+	seconds = year * SECS_PER_YEAR;
+	for (i = 0; i < year; i++)
 	{
 		if (LEAP_YEAR(i))
 		{
@@ -174,16 +169,16 @@ tTime RTCTimerClass::MakeTime(sDateTime &pTm)
 		}
 	}
 
-	// add days for this year, months start from 1
+	// add days for this actual year passed on datetime, months start from 1
 	for (i = 1; i < pTm.Month; i++)
 	{
 		switch (monthDays[i - 1])
 		{
 		case 28:
-			if (LEAP_YEAR(pTm.Year))
-				seconds += SECS_PER_FEB_LEAP;
+			if (LEAP_YEAR(year))
+				seconds += SECS_FEB_LEAP;
 			else
-				seconds += SECS_PER_FEB;
+				seconds += SECS_FEB;
 			break;
 		case 30:
 			seconds += SECS_PER_MONTH_EVEN;

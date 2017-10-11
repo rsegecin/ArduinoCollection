@@ -13,13 +13,15 @@ typedef uint32_t tTime;
 
 #define DEBUG_PIN PB1
 
-#define SECS_PER_MIN		((tTime)(60UL))
-#define SECS_PER_HOUR		((tTime)(3600UL))
-#define SECS_PER_DAY		((tTime)(SECS_PER_HOUR * 24UL))
-#define SECS_PER_MONTH_ODD	((tTime)(SECS_PER_DAY * 31UL))
-#define SECS_PER_MONTH_EVEN	((tTime)(SECS_PER_DAY * 30UL))
-#define SECS_PER_FEB		((tTime)(SECS_PER_DAY * 28UL))
-#define SECS_PER_FEB_LEAP	((tTime)(SECS_PER_DAY * 29UL))
+#define BASE_YEAR				2000UL
+#define SECS_PER_MIN			60UL
+#define SECS_PER_HOUR			3600UL
+#define SECS_PER_DAY			SECS_PER_HOUR * 24UL
+#define SECS_PER_YEAR			SECS_PER_DAY * 365UL
+#define SECS_FEB				SECS_PER_DAY * 28UL
+#define SECS_FEB_LEAP			SECS_PER_DAY * 29UL
+#define SECS_PER_MONTH_EVEN		SECS_PER_DAY * 30UL
+#define SECS_PER_MONTH_ODD		SECS_PER_DAY * 31UL
 
 #define LEAP_YEAR(Y)	(((2000 + Y) > 0) && !((2000 + Y) % 4) && ( ((2000 + Y) % 100) || !((2000 + Y) % 400)))
 static  const uint8_t	monthDays[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -48,7 +50,7 @@ public:
 	void DelayMili(uint32_t pMili, bool &pFlag, void(*doWhile)(void));
 	void SetTime(tTime pTime); // Time in seconds since January 1st 2000
 	bool SetTime(char pTimeString[]);
-	sDateTime * ParseTime(char pTimeString[]);
+	bool ParseTime(sDateTime &pDateTime, char pTimeString[]);
 	tTime MakeTime(sDateTime &t);
 	void BreakTime(tTime &timeInput, sDateTime &tm);
 

@@ -2,7 +2,7 @@
 #define SerialInterpreter_h
 
 #define SERIAL_TX		PD1
-#define BAUD			19200
+#define BAUD			115200
 #define DEF_MSG_SIZE	80
 
 
@@ -18,7 +18,7 @@ class SerialInterpreterClass
 public:
 	enum eSerialCommands
 	{
-		nSetDate, nPrint, nNenhum
+		nSetDate, nParseDate, nPrint, nNenhum
 	};
 
 	SerialInterpreterClass();
