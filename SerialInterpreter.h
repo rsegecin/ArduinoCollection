@@ -13,33 +13,30 @@
 #include <ctype.h>
 #include "Communs.h"
 
+struct sSerialCommand {
+	char * Name;
+	void(*ExecFunction)(void) = nullptr;
+};
+
 class SerialInterpreterClass
 {
 public:
-	enum eSerialCommands
-	{
-		nSetDate, nParseDate, nPrint, nNenhum
-	};
+	SerialInterpreterClass(sSerialCommand * pSerialCommands, int pNumberOfCommands);
 
-	SerialInterpreterClass();
-	~SerialInterpreterClass();
-
-	volatile bool MessageReady = false;   // Serial message's flag
-	volatile eSerialCommands MessageCommand = nNenhum;   // Tells what command should be executed
+	volatile bool MessageReady = false;		// Serial message's flag
+	void(*ExecFunction)(void) = nullptr;	// Tells what command should be executed
 	char StrParameters[DEF_MSG_SIZE];
 	char MessageBuffer[DEF_MSG_SIZE];
 
 	void ClearBuffer(void);
 	char *GetParameter(unsigned char index);
-	void AddCommand(char * strCmdParam, eSerialCommands nCmdParam);
 	void Send(const char *s);
 	void OnInterrupt(void);
 
 private:
-	char * usart_commands[nNenhum];
+	sSerialCommand * SerialCommands = nullptr;
+	int NumberOfCommands = 0;
 	void usart_tx(char c);
 };
-
-extern SerialInterpreterClass SerialInterpreter;
 
 #endif

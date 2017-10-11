@@ -3,6 +3,10 @@
 
 char lBuffer[DEF_MSG_SIZE];
 
+#define NUMBER_OF_COMMANDS	3
+sSerialCommand SerialCommands[NUMBER_OF_COMMANDS];
+SerialInterpreterClass SerialInterpreter(SerialCommands, NUMBER_OF_COMMANDS);
+
 ISR(TIMER1_COMPA_vect)
 {
 	RTCTimer.OnInterrupt();
@@ -19,46 +23,29 @@ int main(void)
 
 	SerialInterpreter.Send("Welcome");
 
-	SerialInterpreter.AddCommand("setdate", SerialInterpreterClass::eSerialCommands::nSetDate);
-	SerialInterpreter.AddCommand("parsedate", SerialInterpreterClass::eSerialCommands::nParseDate);
-	SerialInterpreter.AddCommand("print", SerialInterpreterClass::eSerialCommands::nPrint);
+	SerialCommands[0].Name = "setdate";
+	SerialCommands[0].ExecFunction = SetTime;
+
+	SerialCommands[1].Name = "parsedate";
+	SerialCommands[1].ExecFunction = ParseDate;
+
+	SerialCommands[2].Name = "print";
+	SerialCommands[2].ExecFunction = PrintTime;
 
 	for (;;)
 	{
-		RTCTimer.DelayMili(1000, &doWhatever);
+		RTCTimer.DelayMili(1000, &DoWhatever);
 		PrintTime();
 	}
 }
 
-void doWhatever()
+void DoWhatever()
 {
 	if (SerialInterpreter.MessageReady)
 	{
-		SerialHandler();
-	}
-}
-
-void SerialHandler()
-{
-	switch (SerialInterpreter.MessageCommand)
-	{
-	case SerialInterpreterClass::eSerialCommands::nSetDate:
-	{
-		SetTime();
-		break;
-	}
-	case SerialInterpreterClass::eSerialCommands::nParseDate:
-	{
-		ParseDate();
-		break;
-	}
-	case SerialInterpreterClass::eSerialCommands::nPrint:
-	{
-		PrintTime();
-		break;
-	}
-	default:
-		break;
+		if (SerialInterpreter.ExecFunction != nullptr)
+			SerialInterpreter.ExecFunction();
+		SerialInterpreter.ClearBuffer();
 	}
 }
 

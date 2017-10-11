@@ -3,7 +3,7 @@
 void SerialInterpreterClass::ClearBuffer(void)
 {
 	MessageReady = false;
-	MessageCommand = nNenhum;
+	ExecFunction = nullptr;
 }
 
 char* SerialInterpreterClass::GetParameter(unsigned char index)
@@ -28,11 +28,6 @@ char* SerialInterpreterClass::GetParameter(unsigned char index)
 	}
 
 	return ret_aux;
-}
-
-void SerialInterpreterClass::AddCommand(char * strCmdParam, eSerialCommands nCmdParam)
-{
-	usart_commands[nCmdParam] = strCmdParam;
 }
 
 void SerialInterpreterClass::usart_tx(char c)
@@ -106,7 +101,7 @@ void SerialInterpreterClass::OnInterrupt()
 				flagD = false;
 			break;
 		case 1:
-			strMatchingCmd = (char *)usart_commands[matchingCmd];
+			strMatchingCmd = (char *)SerialCommands[matchingCmd].Name;			
 
 			if (emEspera == false)
 			{
@@ -123,9 +118,9 @@ void SerialInterpreterClass::OnInterrupt()
 						//Verifica parte do comando
 						tmpBit = false;
 
-						for (num = matchingCmd + 1; num < nNenhum; num++)
+						for (num = matchingCmd + 1; num < NumberOfCommands; num++)
 						{
-							strCmd = (char *)usart_commands[num];
+							strCmd = (char *)SerialCommands[num].Name;
 							if ((strncmp(strMatchingCmd, strCmd, msgCmdPosition) == 0) && (charParam == strCmd[msgCmdPosition]))
 							{
 								matchingCmd = num;
@@ -154,7 +149,7 @@ void SerialInterpreterClass::OnInterrupt()
 				{
 					if ((charParam == ',') || (charParam == ';') || (charParam == '='))
 					{
-						if (msgCmdPosition == strlen(usart_commands[matchingCmd]))
+						if (msgCmdPosition == strlen(SerialCommands[matchingCmd].Name))
 						{
 							estado = 2;
 							msgCmdPosition = 0;
@@ -164,9 +159,9 @@ void SerialInterpreterClass::OnInterrupt()
 							//Verifica todo o comando
 							tmpBit = false;
 
-							for (num = matchingCmd + 1; num < nNenhum; num++)
+							for (num = matchingCmd + 1; num < NumberOfCommands; num++)
 							{
-								strCmd = (char *)usart_commands[num];
+								strCmd = (char *)SerialCommands[num].Name;
 								if ((strncmp(strMatchingCmd, strCmd, msgCmdPosition) == 0) && (strlen(strCmd) == msgCmdPosition))
 								{
 									matchingCmd = num;
@@ -223,9 +218,9 @@ void SerialInterpreterClass::OnInterrupt()
 								//Verifica todo o comando
 								tmpBit = false;
 
-								for (num = matchingCmd; num < nNenhum; num++)
+								for (num = matchingCmd; num < NumberOfCommands; num++)
 								{
-									strCmd = (char *)usart_commands[num];
+									strCmd = (char *)SerialCommands[num].Name;
 									if ((strncmp(strMatchingCmd, strCmd, msgCmdPosition) == 0) && (strlen(strCmd) == msgCmdPosition))
 									{
 										matchingCmd = num;
@@ -236,17 +231,17 @@ void SerialInterpreterClass::OnInterrupt()
 
 								if (tmpBit == true)
 								{
-									MessageCommand = (eSerialCommands)matchingCmd;
+									ExecFunction = SerialCommands[matchingCmd].ExecFunction;
 									MessageReady = true;
 								}
 								else
 								{
-									MessageCommand = nNenhum;
+									ExecFunction = nullptr;
 								}
 							}
 							else
 							{
-								MessageCommand = nNenhum;
+								ExecFunction = nullptr;
 							}
 
 							estado = 0;
@@ -291,7 +286,7 @@ void SerialInterpreterClass::OnInterrupt()
 				memset(MessageBuffer + (msgPosition - 2), 0x00, DEF_MSG_SIZE - (msgPosition - 2));
 
 				MessageReady = true;
-				MessageCommand = (eSerialCommands)matchingCmd;
+				ExecFunction = SerialCommands[matchingCmd].ExecFunction;
 
 				matchingCmd = 0;
 				msgCmdPosition = 0;
@@ -311,8 +306,11 @@ void SerialInterpreterClass::OnInterrupt()
 	}
 }
 
-SerialInterpreterClass::SerialInterpreterClass()
+SerialInterpreterClass::SerialInterpreterClass(sSerialCommand * pSerialCommands, int pNumberOfCommands)
 {
+	SerialCommands = pSerialCommands;
+	NumberOfCommands = pNumberOfCommands;
+
 	UBRR0H = UBRRH_VALUE;
 	UBRR0L = UBRRL_VALUE;
 
@@ -329,9 +327,3 @@ SerialInterpreterClass::SerialInterpreterClass()
 
 	ClearBuffer();
 }
-
-SerialInterpreterClass::~SerialInterpreterClass()
-{
-}
-
-SerialInterpreterClass SerialInterpreter;
