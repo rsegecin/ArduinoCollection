@@ -81,11 +81,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Communs.h" />
+    <ClInclude Include="MD5.h" />
     <ClInclude Include="RTCTimer.h" />
     <ClInclude Include="SerialInterpreter.h" />
     <ClInclude Include="__vm\.ArduinoCollections.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MD5.cpp" />
     <ClCompile Include="RTCTimer.cpp" />
     <ClCompile Include="SerialInterpreter.cpp" />
   </ItemGroup>

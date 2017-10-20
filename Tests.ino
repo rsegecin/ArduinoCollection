@@ -1,9 +1,10 @@
 #include "SerialInterpreter.h"
 #include "RTCTimer.h"
+#include "MD5.h"
 
 char lBuffer[DEF_MSG_SIZE];
 
-#define NUMBER_OF_COMMANDS	3
+#define NUMBER_OF_COMMANDS	4
 sSerialCommand SerialCommands[NUMBER_OF_COMMANDS];
 SerialInterpreterClass SerialInterpreter(SerialCommands, NUMBER_OF_COMMANDS);
 
@@ -31,6 +32,9 @@ int main(void)
 
 	SerialCommands[2].Name = "print";
 	SerialCommands[2].ExecFunction = PrintTime;
+
+	SerialCommands[3].Name = "md5";
+	SerialCommands[3].ExecFunction = PrintMD5;
 
 	for (;;)
 	{
@@ -62,8 +66,6 @@ void SetTime()
 		sprintf(lBuffer, "Couldn't parse datetime %s.", SerialInterpreter.GetParameter(0));
 		SerialInterpreter.Send(lBuffer);
 	}
-
-	SerialInterpreter.ClearBuffer();
 }
 
 void ParseDate()
@@ -81,8 +83,6 @@ void ParseDate()
 		sprintf(lBuffer, "Couldn't parse datetime %s.", SerialInterpreter.GetParameter(0));
 		SerialInterpreter.Send(lBuffer);
 	}
-
-	SerialInterpreter.ClearBuffer();
 }
 
 void PrintDateTime(sDateTime datetime)
@@ -91,7 +91,6 @@ void PrintDateTime(sDateTime datetime)
 		datetime.DayOfMonth, datetime.Month, datetime.Year,
 		datetime.Hours, datetime.Minutes, datetime.Seconds);
 	SerialInterpreter.Send(lBuffer);
-	SerialInterpreter.ClearBuffer();
 }
 
 void PrintTime()
@@ -102,5 +101,13 @@ void PrintTime()
 	sprintf(lBuffer, "now: %i/%i/%i %i:%i:%i",
 		conv.DayOfMonth, conv.Month, conv.Year, conv.Hours, conv.Minutes, conv.Seconds);
 	SerialInterpreter.Send(lBuffer);
-	SerialInterpreter.ClearBuffer();
+}
+
+void PrintMD5() {
+	char Hash[33];
+
+	MD5.MakeHash(Hash, SerialInterpreter.GetParameter(0));
+
+	sprintf(lBuffer, "Hash of %s is %s", SerialInterpreter.GetParameter(0), Hash);
+	SerialInterpreter.Send(lBuffer);
 }
