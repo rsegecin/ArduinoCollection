@@ -1,10 +1,12 @@
 #ifndef _MD5_h
 #define _MD5_h
 
-#include "Communs.h"
+#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+
+#define byte uint8_t
 
 const PROGMEM char HEX_VALUES[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
