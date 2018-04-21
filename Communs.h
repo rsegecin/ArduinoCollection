@@ -3,6 +3,8 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef NULL
 #define NULL ((void *) 0)
@@ -12,7 +14,6 @@
 const char DateISORegex[] PROGMEM = "(%d+)%-(%d+)%-(%d+)";
 const char TimeISORegex[] PROGMEM = "(%d+):(%d+):(%d+)";
 
-typedef unsigned int size_t;
 typedef uint8_t byte;
 
 template<class T, void(T::*PTR)(), size_t I>

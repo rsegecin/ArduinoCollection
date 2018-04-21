@@ -157,7 +157,7 @@ tTime RTCTimerClass::MakeTime(sDateTime &pTm)
 {
 	int i;
 	uint32_t seconds;
-	int16_t year = pTm.Year - 2000;
+	int16_t year = pTm.Year - BASE_YEAR;
 
 	// seconds from 2000 till 1 jan 00:00:00 of the given year
 	seconds = year * SECS_PER_YEAR;
@@ -228,7 +228,7 @@ void RTCTimerClass::BreakTime(tTime &timeInput, sDateTime &tm)
 		else
 			break;
 	}
-	tm.Year = year + 2000; // year is offset from 2000 
+	tm.Year = year + BASE_YEAR; // year is offset from 2000 
 
 	days -= (LEAP_YEAR(year) ? 366 : 365);
 	time -= days; // now it is days in this year, starting at 0

@@ -23,7 +23,7 @@ typedef uint32_t tTime;
 #define SECS_PER_MONTH_EVEN		SECS_PER_DAY * 30UL
 #define SECS_PER_MONTH_ODD		SECS_PER_DAY * 31UL
 
-#define LEAP_YEAR(Y)	(((2000 + Y) > 0) && !((2000 + Y) % 4) && ( ((2000 + Y) % 100) || !((2000 + Y) % 400)))
+#define LEAP_YEAR(Y)	(((BASE_YEAR + Y) > 0) && !((BASE_YEAR + Y) % 4) && ( ((BASE_YEAR + Y) % 100) || !((BASE_YEAR + Y) % 400)))
 static  const uint8_t	monthDays[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 struct sDateTime {

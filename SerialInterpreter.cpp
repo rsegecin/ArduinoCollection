@@ -6,6 +6,33 @@ void SerialInterpreterClass::ClearBuffer(void)
 	ExecFunction = nullptr;
 }
 
+void SerialInterpreterClass::usart_tx(char c)
+{
+	while (!(UCSR0A & _BV(UDRE0)));
+	UDR0 = c;
+	//Serial.print(c);
+}
+
+void SerialInterpreterClass::Send(const char *s)
+{
+	set_output(DDRD, SERIAL_TX);
+	set_bit(UCSR0B, TXEN0);
+
+	usart_tx('\r');
+	usart_tx('\n');
+
+	while (*s != '\0')
+	{
+		usart_tx(*s++);
+	}
+
+	usart_tx('\r');
+	usart_tx('\n');
+
+	set_input(DDRD, SERIAL_TX);
+	clear_bit(UCSR0B, TXEN0);
+}
+
 char* SerialInterpreterClass::GetParameter(unsigned char index)
 {
 	uint8_t num;
@@ -30,35 +57,8 @@ char* SerialInterpreterClass::GetParameter(unsigned char index)
 	return ret_aux;
 }
 
-void SerialInterpreterClass::usart_tx(char c)
+void SerialInterpreterClass::OnInterrupt(char charParam)
 {
-	while (!(UCSR0A & _BV(UDRE0)));
-	UDR0 = c;
-}
-
-void SerialInterpreterClass::Send(const char *s)
-{
-	set_output(DDRD, SERIAL_TX);
-	set_bit(UCSR0B, TXEN0);
-
-	usart_tx('\r');
-	usart_tx('\n');
-
-	while (*s != '\0')
-	{
-		usart_tx(*s++);
-	}
-
-	usart_tx('\r');
-	usart_tx('\n');
-
-	set_input(DDRD, SERIAL_TX);
-	clear_bit(UCSR0B, TXEN0);
-}
-
-void SerialInterpreterClass::OnInterrupt()
-{
-	char charParam;
 	static bool flagD = false;
 
 	static char estado = 0;
@@ -76,8 +76,6 @@ void SerialInterpreterClass::OnInterrupt()
 
 	if (MessageReady == false)
 	{
-		charParam = UDR0;
-
 		MessageBuffer[msgPosition] = charParam;
 
 		switch (estado)
@@ -310,20 +308,6 @@ SerialInterpreterClass::SerialInterpreterClass(sSerialCommand * pSerialCommands,
 {
 	SerialCommands = pSerialCommands;
 	NumberOfCommands = pNumberOfCommands;
-
-	UBRR0H = UBRRH_VALUE;
-	UBRR0L = UBRRL_VALUE;
-
-#if USE_2X
-	UCSR0A |= _BV(U2X0);
-#else
-	UCSR0A &= ~_BV(U2X0);
-#endif
-
-	// Set frame format to 8 data bits, no parity, 1 stop bit
-	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-	//enable reception and RC complete interrupt
-	UCSR0B = (1 << RXEN0) | (1 << RXCIE0);
 
 	ClearBuffer();
 }
