@@ -1,0 +1,3 @@
+﻿  SerialLib.cpp
+  AssemblyInfo.obj : /DEBUG:FASTLINK is not supported when managed code is present; restarting link with /DEBUG:FULL
+  SerialLib.vcxproj -> C:\Users\Rinaldi\OneDrive\Smartgreen\PCplusplus\SerialLib\Debug\SerialLib.exe
